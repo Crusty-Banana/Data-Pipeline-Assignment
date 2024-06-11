@@ -51,19 +51,19 @@ services:
       - ./Nifi/nifi_flowfile:/opt/nifi/nifi-current/flowfile_repository
       - ./Nifi/nifi_content:/opt/nifi/nifi-current/content_repository
       - ./Nifi/nifi_provenance:/opt/nifi/nifi-current/provenance_repository
+      - ./Nifi/conf:/opt/nifi/nifi-current/conf
       - ./Hadoop/conf:/etc/hadoop/conf
 
   namenode:
     image: apache/hadoop:3
     hostname: namenode
+    container_name: namenode
     ports:
       - 9870:9870
       - 9000:9000
     env_file:
       - ./Hadoop/config
     environment:
-      LANG: C.UTF-8
-      LC_ALL: C.UTF-8
       ENSURE_NAMENODE_DIR: "/tmp/hadoop-root/dfs/name"
     volumes:
       - ./Hadoop:/Hadoop
@@ -88,6 +88,7 @@ services:
 
   spark-master:
     image: bitnami/spark:latest
+    container_name: spark-master
     volumes:
       - ./Spark/process_data.py:/opt/bitnami/spark/process_data.py
     ports:
