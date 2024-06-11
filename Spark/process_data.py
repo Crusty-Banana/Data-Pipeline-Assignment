@@ -1,8 +1,9 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
-from pyspark.sql.functions import col, udf, when
+from pyspark.sql.functions import col, udf
 from datetime import datetime
 
+# Vietnamese text to non special characters
 vietnamese_char_map = {
     'à': 'a', 'ả': 'a', 'ã': 'a', 'á': 'a', 'ạ': 'a', 'â': 'a', 'ấ': 'a', 'ầ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
     'ă': 'a', 'ắ': 'a', 'ằ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
@@ -25,7 +26,7 @@ vietnamese_char_map = {
     'Đ': 'D',
 }
 
-# Function to convert date format
+# String Transformation Functions 
 def to_new_date(date):
     original_date = datetime.strptime(date, "%m/%d/%Y")
     return original_date.strftime("%Y%m%d")
@@ -66,7 +67,7 @@ spark = SparkSession.builder \
     .config("spark.hadoop.fs.defaultFS", "hdfs://namenode:9000") \
     .getOrCreate()
 
-# Read Data
+# Read Data From HDFS
 activity_df = spark.read.schema(schema).parquet("hdfs://namenode/raw_zone/fact/activity")
     
 student_list = spark.read.schema(dssv_schema).csv("hdfs://namenode/raw_zone/fact/student_list")
@@ -79,8 +80,9 @@ activity_df = activity_df.withColumn("date", to_new_date_udf(col("timestamp"))) 
 activity_df = activity_df.groupBy("date", "student_code", "student_name", "activity") \
     .agg({"activity": "count"}) \
     .withColumnRenamed("count(activity)", "totalFile") \
-    .orderBy("student_name")
+    .orderBy("date")
 
+# Write Processed Data
 student_names = student_list.select("student_name").rdd.flatMap(lambda x: x).collect()
 
 for student_name in student_names:
@@ -88,6 +90,6 @@ for student_name in student_names:
     file_name = to_clean_name(student_name)
     partition_df.coalesce(1).write.mode("overwrite").option("header", "false").csv(f"hdfs://namenode/output_zone/{file_name}.csv")
 
+# More efficient but wrong naming format
 # activity_df.write.partitionBy("student_name").mode("overwrite").option("header", "false").format("csv").save("hdfs://namenode/output_zone/student")
 
-# spark-submit --master spark://spark-master:7077 process_data.py
