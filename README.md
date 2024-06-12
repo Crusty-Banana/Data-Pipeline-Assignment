@@ -50,3 +50,13 @@ docker exec -it namenode sh -c "hdfs dfs -rm -r /raw_zone/fact/activity/*"
 Nifi: http://localhost:8080/nifi
 Hadoop: http://localhost:9870
 Spark: http://localhost:9090
+
+# Keeping the code End Of Line Sequence LF to be consistent with Linux VM
+
+```
+git config --global core.autocrlf input
+git config --global core.eol lf
+git add --renormalize .
+git commit -m "Normalize line endings to LF"
+git push origin master
+```
