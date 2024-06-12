@@ -33,7 +33,8 @@ docker exec -it spark-master sh -c "spark-submit --master spark://spark-master:7
 When you want to download processed data from HDFS to local computer at /Hadoop, run
 
 ```
-docker exec -it namenode sh -c "hdfs dfs -copyToLocal /output /Hadoop"
+docker exec -it namenode sh -c "rm -rf /Hadoop/output_zone && hdfs dfs -copyToLocal /output_zone /Hadoop"
+
 ```
 
 # Some useful command
@@ -43,3 +44,9 @@ python Kafka/kafka_consumer.py
 docker exec -it namenode sh -c "hdfs dfs -rm -r /output/*"
 docker exec -it namenode sh -c "hdfs dfs -rm -r /raw_zone/fact/activity/*"
 ```
+
+# GUI location
+
+Nifi: http://localhost:8080/nifi
+Hadoop: http://localhost:9870
+Spark: http://localhost:9090

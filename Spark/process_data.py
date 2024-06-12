@@ -75,13 +75,14 @@ student_list = spark.read.schema(dssv_schema).csv("hdfs://namenode/raw_zone/fact
 # Process Data
 activity_df = activity_df.withColumn("date", to_new_date_udf(col("timestamp"))) \
     .join(student_list, "student_code") \
-    .select("date", "student_code", "student_name", "activity")
+    .select("date", "student_code", "student_name", "activity", "numberOfFile")
 
 activity_df = activity_df.groupBy("date", "student_code", "student_name", "activity") \
-    .agg({"activity": "count"}) \
-    .withColumnRenamed("count(activity)", "totalFile") \
+    .agg({"numberOfFile": "sum"}) \
+    .withColumnRenamed("sum(numberOfFile)", "totalFile") \
     .orderBy("date")
 
+activity_df = activity_df.select("date", "student_code", "student_name", "activity", "totalFile")
 # Write Processed Data
 student_names = student_list.select("student_name").rdd.flatMap(lambda x: x).collect()
 
